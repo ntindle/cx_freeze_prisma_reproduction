@@ -82,7 +82,7 @@ jobs:
 
       - name: Build distribution
         run: |
-          poetry run python ..\setup.py bdist_msi
+          python ..\setup.py bdist_msi
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
