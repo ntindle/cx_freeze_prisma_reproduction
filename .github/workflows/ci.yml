@@ -80,27 +80,9 @@ jobs:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
 
-      - name: install rpm
-        if: matrix.platform-os == 'ubuntu'
-        run: sudo apt-get install -y alien fakeroot rpm
-
       - name: Build distribution
         run: |
-          case "${{ matrix.platform-os }}" in
-            "macos" | "macos-arm64")
-              ${MAC_COMMAND}
-              ;;
-            "windows")
-              ${WINDOWS_COMMAND}
-              ;;
-            *)
-              ${LINUX_COMMAND}
-              ;;
-          esac
-        env:
-          MAC_COMMAND: "python setup.py bdist_dmg"
-          WINDOWS_COMMAND: "python setup.py bdist_msi"
-          LINUX_COMMAND: "python setup.py bdist_appimage"
+          poetry run python .\setup.py bdist_msi
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
@@ -164,27 +146,9 @@ jobs:
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates
 
-      - name: install rpm
-        if: matrix.platform-os == 'ubuntu'
-        run: sudo apt-get install -y alien fakeroot rpm
-
       - name: Build distribution
         run: |
-          case "${{ matrix.platform-os }}" in
-            "macos" | "macos-arm64")
-              ${MAC_COMMAND}
-              ;;
-            "windows")
-              ${WINDOWS_COMMAND}
-              ;;
-            *)
-              ${LINUX_COMMAND}
-              ;;
-          esac
-        env:
-          MAC_COMMAND: "poetry run poe dist_dmg"
-          WINDOWS_COMMAND: "poetry run poe dist_msi"
-          LINUX_COMMAND: "poetry run poe dist_appimage"
+          poetry run python .\setup.py bdist_msi
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
