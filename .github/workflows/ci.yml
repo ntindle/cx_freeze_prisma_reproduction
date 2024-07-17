@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, development, ci-test*]
+    branches: [main, development, ci-test*]
   pull_request:
-    branches: [master, development, release-*]
+    branches: [main, development, release-*]
 
 concurrency:
   group: ${{ format('ci-{0}', github.head_ref && format('{0}-{1}', github.event_name, github.event.pull_request.number) || github.sha) }}
