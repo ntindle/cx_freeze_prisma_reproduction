@@ -17,7 +17,6 @@ async def main():
     if prisma.is_connected():
         await prisma.disconnect()
 
-
 if __name__ == "__main__":
     # run the main function
     asyncio.run(main())
