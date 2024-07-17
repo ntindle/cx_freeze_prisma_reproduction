@@ -98,9 +98,9 @@ jobs:
               ;;
           esac
         env:
-          MAC_COMMAND: "poetry run poe dist_dmg"
-          WINDOWS_COMMAND: "poetry run poe dist_msi"
-          LINUX_COMMAND: "poetry run poe dist_appimage"
+          MAC_COMMAND: "python setup.py bdist_dmg"
+          WINDOWS_COMMAND: "python setup.py bdist_msi"
+          LINUX_COMMAND: "python setup.py bdist_appimage"
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
