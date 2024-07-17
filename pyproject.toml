@@ -9,7 +9,10 @@ readme = "README.md"
 python = "^3.10"
 prisma = "^0.13.1"
 cx-Freeze = "^7.2.0"
+poethepoet = "^0.27.0"
 
+[tool.poe.tasks.dist_msi]
+cmd = "python setup.py bdist_msi"
 
 [build-system]
 requires = ["poetry-core"]
