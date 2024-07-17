@@ -135,11 +135,6 @@ jobs:
       - name: Install Python dependencies
         run: poetry install
 
-      - name: Install Prisma Dependencies
-        run: |
-          mkdir prisma
-          poetry run prisma py fetch --force
-
       - name: Generate Prisma Client
         run: poetry run prisma generate
 
