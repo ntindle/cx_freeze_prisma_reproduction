@@ -36,7 +36,7 @@ Uninstall the software by searching Settings > Apps > Installed Apps > prisma_re
 
 The pipeline `ci.yml` builds two artifacts. One sets the Environment Variables and the other does not.
 
-Then, Open the pipelines for this software and download the MSI File that was built using the same setup.py file.
+Then, Open the [latest pipeline for this repo](https://github.com/ntindle/cx_freeze_prisma_reproduction/actions/) and download the MSI File that was built using the same setup.py file.
 
 Then, select the `prisma_reproduction-no-env-set-msi-windows` artifact and run the below commands. Update the below to your install location that was installed by the MSI file.
 
