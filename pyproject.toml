@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "cx-freeze-prisma-reproduction"
+version = "0.1.0"
+description = ""
+authors = ["Nicholas Tindle <nick@ntindle.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+prisma = "^0.13.1"
+cx-Freeze = "^7.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

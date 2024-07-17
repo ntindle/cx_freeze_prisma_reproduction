@@ -1,0 +1,16 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./database.db"
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+  interface            = "asyncio"
+}
+
+// This model describes the Agent Graph/Flow (Multi Agent System).
+model Test {
+  id   String  @id @default(uuid())
+  name String?
+}
