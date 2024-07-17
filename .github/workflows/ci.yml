@@ -15,7 +15,7 @@ defaults:
     shell: bash
 
 jobs:
-  build:
+  build_with_env:
     permissions:
       contents: read
     timeout-minutes: 30
@@ -47,24 +47,6 @@ jobs:
       - id: get_date
         name: Get date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      - name: Set up Python dependency cache
-        # On Windows, unpacking cached dependencies takes longer than just installing them
-        if: runner.os != 'Windows'
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.os == 'macOS' && '~/Library/Caches/pypoetry' || '~/.cache/pypoetry' }}
-          key: poetry-${{ runner.os }}-${{ hashFiles('rnd/autogpt_server/poetry.lock') }}
-
-      - name: Install Poetry (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-
-          if [ "${{ runner.os }}" = "macOS" ]; then
-            PATH="$HOME/.local/bin:$PATH"
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
-          fi
 
       - name: Install Poetry (Windows)
         if: runner.os == 'Windows'
@@ -124,4 +106,88 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: prisma_reproduction-msi-${{ matrix.platform-os }}
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\dist\*.msi
+
+  build_with_no_env:
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+        platform-os: [windows]
+    runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - id: get_date
+        name: Get date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Install Poetry (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+          $env:PATH += ";$env:APPDATA\Python\Scripts"
+          echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: poetry install
+
+      - name: Install Prisma Dependencies
+        run: |
+          mkdir prisma
+          poetry run prisma py fetch --force
+
+      - name: Generate Prisma Client
+        run: poetry run prisma generate
+
+      - name: Run Database Migrations
+        run: poetry run prisma migrate dev --name updates
+
+      - name: install rpm
+        if: matrix.platform-os == 'ubuntu'
+        run: sudo apt-get install -y alien fakeroot rpm
+
+      - name: Build distribution
+        run: |
+          case "${{ matrix.platform-os }}" in
+            "macos" | "macos-arm64")
+              ${MAC_COMMAND}
+              ;;
+            "windows")
+              ${WINDOWS_COMMAND}
+              ;;
+            *)
+              ${LINUX_COMMAND}
+              ;;
+          esac
+        env:
+          MAC_COMMAND: "poetry run poe dist_dmg"
+          WINDOWS_COMMAND: "poetry run poe dist_msi"
+          LINUX_COMMAND: "poetry run poe dist_appimage"
+
+      - name: Upload msi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma_reproduction-no-env-set-msi-${{ matrix.platform-os }}
           path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\dist\*.msi
