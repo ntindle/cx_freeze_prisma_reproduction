@@ -83,6 +83,9 @@ jobs:
       - name: Build distribution
         run: |
           poetry run poe dist_msi
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
