@@ -27,6 +27,21 @@ jobs:
         prisma-schema: [schema.prisma, postgres.schema.prisma]
     runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: testuser
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -68,18 +83,21 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Build distribution
         run: |
@@ -87,6 +105,7 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
@@ -106,6 +125,21 @@ jobs:
         prisma-schema: [schema.prisma, postgres.schema.prisma]
     runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: testuser
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -142,13 +176,19 @@ jobs:
 
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Build distribution
         run: |
           poetry run poe dist_msi
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
@@ -167,6 +207,21 @@ jobs:
         platform-os: [windows]
         prisma-schema: [schema.prisma, postgres.schema.prisma]
     runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: testuser
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -209,18 +264,21 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Build distribution
         run: |
@@ -228,6 +286,7 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Zip the exe folder
         shell: pwsh
@@ -252,6 +311,21 @@ jobs:
         prisma-schema: [schema.prisma, postgres.schema.prisma]
     runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_USER: testuser
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -288,13 +362,19 @@ jobs:
 
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Build distribution
         run: |
           poetry run poe build_exe
+        env:
+          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
 
       - name: Zip the exe folder
         shell: pwsh
