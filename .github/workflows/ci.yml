@@ -153,3 +153,140 @@ jobs:
         with:
           name: prisma_reproduction-no-env-set-msi-${{ matrix.platform-os }}
           path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\dist\*.msi
+  build_exe_with_env:
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+        platform-os: [windows]
+    runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - id: get_date
+        name: Get date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Install Poetry (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+          $env:PATH += ";$env:APPDATA\Python\Scripts"
+          echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: poetry install
+
+      - name: Install Prisma Dependencies
+        run: |
+          mkdir prisma
+          poetry run prisma py fetch --force
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+
+      - name: Generate Prisma Client
+        run: poetry run prisma generate
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+
+      - name: Run Database Migrations
+        run: poetry run prisma migrate dev --name updates
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+
+      - name: Build distribution
+        run: |
+          poetry run poe build
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+
+      - name: Upload msi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma_reproduction-exe-${{ matrix.platform-os }}
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*.msi
+  build_exe_with_no_env:
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+        platform-os: [windows]
+    runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - id: get_date
+        name: Get date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Install Poetry (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+          $env:PATH += ";$env:APPDATA\Python\Scripts"
+          echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: poetry install
+
+      - name: Generate Prisma Client
+        run: poetry run prisma generate
+
+      - name: Run Database Migrations
+        run: poetry run prisma migrate dev --name updates
+
+      - name: Build distribution
+        run: |
+          poetry run poe build_exe
+
+      - name: Upload msi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma_reproduction-no-env-set-exe-${{ matrix.platform-os }}
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*.msi
