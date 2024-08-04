@@ -35,7 +35,7 @@ def find_latest_node_folder(base_path):
 
 # Determine the base path
 if sys.platform.startswith("win"):
-    base_path = os.path.expanduser("~/.cache/prisma-python/nodeenv/src")
+    base_path = os.path.expanduser("~\\.cache\\prisma-python\\nodeenv\\src")
 else:
     # For non-Windows platforms, adjust the path accordingly
     base_path = os.path.expanduser("~/.cache/prisma-python/nodeenv/src")
