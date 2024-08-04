@@ -46,11 +46,6 @@ jobs:
 
       - name: Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v6
-        with:
-          username: testuser
-          password: testpassword
-          database: testdb
-          port: 5432
         id: postgres
 
       - id: get_date
@@ -76,21 +71,21 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Build distribution
         run: |
@@ -98,7 +93,7 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
@@ -137,11 +132,6 @@ jobs:
 
       - name: Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v6
-        with:
-          username: testuser
-          password: testpassword
-          database: testdb
-          port: 5432
         id: postgres
 
       - id: get_date
@@ -163,18 +153,18 @@ jobs:
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Build distribution
         run: |
           poetry run poe dist_msi
         env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
@@ -213,13 +203,8 @@ jobs:
 
       - name: Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v6
-        with:
-          username: testuser
-          password: testpassword
-          database: testdb
-          port: 5432
         id: postgres
-
+        
       - id: get_date
         name: Get date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
@@ -243,21 +228,21 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Build distribution
         run: |
@@ -265,7 +250,7 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Zip the exe folder
         shell: pwsh
@@ -309,11 +294,6 @@ jobs:
 
       - name: Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v6
-        with:
-          username: testuser
-          password: testpassword
-          database: testdb
-          port: 5432
         id: postgres
 
       - id: get_date
@@ -335,18 +315,18 @@ jobs:
       - name: Generate Prisma Client
         run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Run Database Migrations
         run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Build distribution
         run: |
           poetry run poe build_exe
         env:
-          DATABASE_URL: "postgresql://testuser:testpassword@localhost:5432/testdb"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Zip the exe folder
         shell: pwsh
