@@ -46,7 +46,9 @@ node_folder = find_latest_node_folder(base_path)
 if node_folder and os.path.exists(node_folder):
     include_files.append((node_folder, "prisma-nodeenv"))
 else:
-    raise Exception("Node folder not found")
+    raise Exception(
+        f"Node folder not found. Base Path: {base_path} Node Folder: {node_folder}"
+    )
 
 
 # add the prisma directory if it exists
