@@ -226,8 +226,9 @@ jobs:
           PRISMA_HOME_DIR: "./prisma"
 
       - name: Zip the exe folder
+        shell: pwsh
         run: |
-          7z a -tzip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*
+          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip"
 
       - name: Upload exe artifact
         uses: actions/upload-artifact@v4
@@ -290,8 +291,9 @@ jobs:
           poetry run poe build_exe
 
       - name: Zip the exe folder
+        shell: pwsh
         run: |
-          7z a -tzip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*
+          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip"
 
       - name: Upload exe artifact
         uses: actions/upload-artifact@v4
