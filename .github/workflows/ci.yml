@@ -255,13 +255,13 @@ jobs:
       - name: Zip the exe folder
         shell: pwsh
         run: |
-          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip"
+          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip"
 
       - name: Upload exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: prisma_reproduction-exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}
-          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip
 
   build_exe_with_no_env:
     permissions:
@@ -331,10 +331,10 @@ jobs:
       - name: Zip the exe folder
         shell: pwsh
         run: |
-          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip"
+          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip"
 
       - name: Upload exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: prisma_reproduction-no-env-set-exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}
-          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip
