@@ -5,6 +5,8 @@ import os
 from cx_Freeze import Executable, setup  # type: ignore
 
 import prisma
+import prisma.generator
+import prisma.generator.schema
 
 GUID = "{323a1ee5-317d-4423-8490-effd8f5bedcf}"
 
@@ -13,6 +15,7 @@ packages = [
     for m in iter_modules()
     if m.ispkg and m.module_finder and "poetry" in m.module_finder.path  # type: ignore
 ]
+
 
 # source, destination in the bundle
 include_files = [
@@ -25,6 +28,13 @@ if os.path.exists("./prisma"):
 
 if os.path.exists("./database.db"):
     include_files.append(("./database.db", "database.db"))
+
+# copy the prisma schema into the folder /prisma/schema.prisma
+if os.path.exists("./schema.prisma"):
+    include_files.append(("./schema.prisma", "prisma/schema.prisma"))
+
+if os.path.exists("./postgres.schema.prisma"):
+    include_files.append(("./postgres.schema.prisma", "prisma/postgres.schema.prisma"))
 
 setup(
     name="AutoGPT Server",
