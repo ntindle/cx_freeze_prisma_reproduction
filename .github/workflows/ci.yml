@@ -220,7 +220,7 @@ jobs:
 
       - name: Build distribution
         run: |
-          poetry run poe build
+          poetry run poe build_exe
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
