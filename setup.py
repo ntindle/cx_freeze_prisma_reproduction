@@ -1,4 +1,3 @@
-
 from pkgutil import iter_modules
 
 import os
@@ -23,6 +22,9 @@ include_files = [
 # add the prisma directory if it exists
 if os.path.exists("./prisma"):
     include_files.append(("./prisma", "prisma"))
+
+if os.path.exists("./database.db"):
+    include_files.append(("./database.db", "database.db"))
 
 setup(
     name="AutoGPT Server",
