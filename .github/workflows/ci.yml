@@ -225,11 +225,15 @@ jobs:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
 
-      - name: Upload msi artifact
+      - name: Zip the exe folder
+        run: |
+          7z a -tzip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*
+
+      - name: Upload exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: prisma_reproduction-exe-${{ matrix.platform-os }}
-          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*.msi
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip
   build_exe_with_no_env:
     permissions:
       contents: read
@@ -285,8 +289,12 @@ jobs:
         run: |
           poetry run poe build_exe
 
-      - name: Upload msi artifact
+      - name: Zip the exe folder
+        run: |
+          7z a -tzip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*
+
+      - name: Upload exe artifact
         uses: actions/upload-artifact@v4
         with:
           name: prisma_reproduction-no-env-set-exe-${{ matrix.platform-os }}
-          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*.msi
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe.zip
