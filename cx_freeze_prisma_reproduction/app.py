@@ -102,8 +102,21 @@ async def main():
                 print(f"DATABASE_URL found: {os.getenv('DATABASE_URL')}")
 
             print("Pushing schema to database")
-            cli.run(["db", "push", "--schema=./prisma/postgres.schema.prisma"])
-            # cli.run(["migrate", "deploy", "--schema=./prisma/postgres.schema.prisma"])
+            cli.run(
+                [
+                    "db",
+                    "push",
+                    "--schema=./prisma/postgres.schema.prisma",
+                    "--skip-generate",
+                ]
+            )
+            cli.run(
+                [
+                    "migrate",
+                    "deploy",
+                    "--schema=./prisma/postgres.schema.prisma",
+                ]
+            )
 
         install_runtime()
     else:
@@ -119,7 +132,7 @@ async def main():
         else:
             print(f"DATABASE_URL found: {os.getenv('DATABASE_URL')}")
         print("Pushing schema to database")
-        cli.run(["db", "push", "--schema=./prisma/postgres.schema.prisma"])
+        cli.run(["db", "push", "--schema=./postgres.schema.prisma", "--skip-generate"])
 
     prisma = Prisma(
         auto_register=True,
