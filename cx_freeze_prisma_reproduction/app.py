@@ -9,7 +9,7 @@ from prisma import Prisma
 async def main():
     set_start_method("spawn", force=True)
 
-    prisma = Prisma(auto_register=True)
+    prisma = Prisma(auto_register=True, datasource={'url': 'file:./database.db'})
 
     if not prisma.is_connected():
         await prisma.connect()
