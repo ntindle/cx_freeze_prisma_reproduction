@@ -61,7 +61,6 @@ async def main():
                     os.system(
                         f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
                     )
-                os.system(
                 # Create a new database -> should be handled by prisma
                 # os.system(
                 #     f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
