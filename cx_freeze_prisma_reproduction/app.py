@@ -93,7 +93,8 @@ async def main():
                 os.environ["DATABASE_URL"] = (
                     "postgresql://autogpt_server:autogpt_server_password@localhost:5432/autogpt_server"
                 )
-            cli.run(["migrate", "deploy", "--schema=./prisma/postgres.schema.prisma"])
+            cli.run(["db", "push", "--schema=./prisma/postgres.schema.prisma"])
+            # cli.run(["migrate", "deploy", "--schema=./prisma/postgres.schema.prisma"])
 
         install_runtime()
     prisma = Prisma(
