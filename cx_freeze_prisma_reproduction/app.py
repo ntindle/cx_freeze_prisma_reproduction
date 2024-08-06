@@ -9,7 +9,7 @@ from prisma import Prisma
 async def main():
     set_start_method("spawn", force=True)
 
-    prisma = Prisma(auto_register=True, datasource={'url': 'file:./database.db'})
+    prisma = Prisma(auto_register=True, datasource={"url": "file:./database.db"})
 
     if not prisma.is_connected():
         await prisma.connect()
@@ -17,6 +17,7 @@ async def main():
     print(f"Number of items in db: {await prisma.test.count()}")
     if prisma.is_connected():
         await prisma.disconnect()
+
 
 def install_runtime():
     import nodeenv
@@ -34,7 +35,9 @@ def install_runtime():
     binary_dir = cli.config.binary_cache_dir.absolute()
     if not binary_dir.exists():
         print(f"Installing prisma to {cache_dir}")
+        cli.run(["py", "fetch"])
         cli.run(["generate"])
+
 
 if __name__ == "__main__":
     freeze_support()
