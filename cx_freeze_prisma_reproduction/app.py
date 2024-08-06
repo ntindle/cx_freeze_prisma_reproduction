@@ -13,7 +13,8 @@ async def main():
     if getattr(sys, "frozen", False):
         os.environ["PRISMA_BINARY_CACHE_DIR"] = os.path.dirname(sys.executable)
 
-    if getattr(sys, "frozen", True):
+    if getattr(sys, "frozen", False):
+        print("Running as a frozen application")
         # If the application is run as a bundle, the set the postgres up if DATABASE_URL is not set
         # if "DATABASE_URL" not in os.environ:
         # port = # random high unused port
@@ -75,6 +76,7 @@ async def main():
             import nodeenv
             import prisma.cli.prisma as cli
 
+            print("Checking runtime")
             cache_dir = cli.config.nodeenv_cache_dir.absolute()
             if not cache_dir.exists():
                 print(f"Installing nodeenv to {cache_dir}")
@@ -84,19 +86,41 @@ async def main():
                 sys.argv = sys_argv
 
             # PRISMA_BINARY_CACHE_DIR
+            print("Checking prisma binary")
             binary_dir = cli.config.binary_cache_dir.absolute()
             if not binary_dir.exists():
                 print(f"Installing prisma to {cache_dir}")
                 cli.run(["generate", "--schema=./prisma/postgres.schema.prisma"])
+
+            print("Checking database url")
             if not os.getenv("DATABASE_URL"):
                 print("No DATABASE_URL found, setting to default")
                 os.environ["DATABASE_URL"] = (
                     "postgresql://autogpt_server:autogpt_server_password@localhost:5432/autogpt_server"
                 )
+            else:
+                print(f"DATABASE_URL found: {os.getenv('DATABASE_URL')}")
+
+            print("Pushing schema to database")
             cli.run(["db", "push", "--schema=./prisma/postgres.schema.prisma"])
             # cli.run(["migrate", "deploy", "--schema=./prisma/postgres.schema.prisma"])
 
         install_runtime()
+    else:
+        print("Running as a script")
+        import prisma.cli.prisma as cli
+
+        print("Checking database url")
+        if not os.getenv("DATABASE_URL"):
+            print("No DATABASE_URL found, setting to default")
+            os.environ["DATABASE_URL"] = (
+                "postgresql://autogpt_server:autogpt_server_password@localhost:5432/autogpt_server"
+            )
+        else:
+            print(f"DATABASE_URL found: {os.getenv('DATABASE_URL')}")
+        print("Pushing schema to database")
+        cli.run(["db", "push", "--schema=./prisma/postgres.schema.prisma"])
+
     prisma = Prisma(
         auto_register=True,
     )
