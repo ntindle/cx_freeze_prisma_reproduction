@@ -1,4 +1,3 @@
-
 from pkgutil import iter_modules
 
 import os
@@ -14,15 +13,17 @@ packages = [
 ]
 
 # source, destination in the bundle
-include_files = [
-]
+include_files = []
 
 # add the prisma directory if it exists
-#if os.path.exists("./prisma"):
+# if os.path.exists("./prisma"):
 #    include_files.append(("./prisma", "prisma"))
 
 if os.path.exists("./database.db"):
     include_files.append(("./database.db", "database.db"))
+
+if os.path.exists("./schema.prisma"):
+    include_files.append(("./schema.prisma", "prisma/schema.prisma"))
 
 setup(
     name="AutoGPT Server",
@@ -40,8 +41,8 @@ setup(
         "build_exe": {
             "packages": packages,
             "includes": [
-                #"cx_freeze_prisma_reproduction",
-                #"prisma",
+                # "cx_freeze_prisma_reproduction",
+                # "prisma",
             ],
             # Exclude the two module from readability.compat as it causes issues
             "excludes": ["readability.compat.two"],
