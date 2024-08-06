@@ -8,10 +8,7 @@ from prisma import Prisma
 
 async def main():
     set_start_method("spawn", force=True)
-    freeze_support()
 
-    if getattr(sys, "frozen", False):
-        os.environ["PRISMA_BINARY_CACHE_DIR"] = os.path.dirname(sys.executable)
     prisma = Prisma(auto_register=True)
 
     if not prisma.is_connected():
@@ -21,7 +18,28 @@ async def main():
     if prisma.is_connected():
         await prisma.disconnect()
 
+def install_runtime():
+    import nodeenv
+    import prisma.cli.prisma as cli
+
+    cache_dir = cli.config.nodeenv_cache_dir.absolute()
+    if not cache_dir.exists():
+        print(f"Installing nodeenv to {cache_dir}")
+        sys_argv = sys.argv.copy()
+        sys.argv = ["nodeenv", str(cache_dir), *cli.config.nodeenv_extra_args]
+        nodeenv.main()
+        sys.argv = sys_argv
+
+    # PRISMA_BINARY_CACHE_DIR
+    binary_dir = cli.config.binary_cache_dir.absolute()
+    if not binary_dir.exists():
+        print(f"Installing prisma to {cache_dir}")
+        cli.run(["generate"])
 
 if __name__ == "__main__":
+    freeze_support()
+    # install node and prisma binaries on first run
+    if getattr(sys, "frozen", False):
+        install_runtime()
     # run the main function
     asyncio.run(main())
