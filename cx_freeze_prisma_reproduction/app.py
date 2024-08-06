@@ -77,7 +77,13 @@ async def main():
             binary_dir = cli.config.binary_cache_dir.absolute()
             if not binary_dir.exists():
                 print(f"Installing prisma to {cache_dir}")
-                cli.run(["generate"])
+                cli.run(["generate", "--schema=./postgres.schema.prisma"])
+            if not os.getenv("DATABASE_URL"):
+                print("No DATABASE_URL found, setting to default")
+                os.environ["DATABASE_URL"] = (
+                    "postgresql://autogpt_server:autogpt_server_password@localhost:5432/autogpt_server"
+                )
+            cli.run(["migrate", "deploy"])
 
         install_runtime()
     prisma = Prisma(
