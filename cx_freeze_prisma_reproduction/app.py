@@ -38,22 +38,31 @@ async def main():
                     f.write(password)
                     print("Password file created")
 
-                if sys.platform == "win32":
-                    os.system(
-                        ".\\pgsql\\bin\\initdb.exe --pgdata=postgres_data --username=autogpt_server --pwfile=pg_pass.txt --no-instructions"
-                    )
+                base_pgsql = ".\\pgsql\\bin\\"
+                # check if the directory exists
+                if not os.path.exists(base_pgsql):
+                    # cehck if .\\pgsql\\pgsql\\bin\\ exists\
+                    if os.path.exists(".\\pgsql\\pgsql\\bin\\"):
+                        base_pgsql = ".\\pgsql\\pgsql\\bin\\"
+                    raise FileNotFoundError("PostgreSQL directory not found")
+
+                os.system(
+                    f"{base_pgsql}initdb.exe --pgdata=postgres_data --username=autogpt_server --pwfile=pg_pass.txt --no-instructions"
+                )
 
                 os.remove("pg_pass.txt")
                 print("PostgreSQL Database initialization complete")
                 # Register the database
                 # os.system('.\\pgsql\\bin\\pgctl.exe register -D postgres_data -N "AutoGPT Server PostgreSQL" -w -S demand')
-                # Start the database
-                os.system(
-                    ".\\pgsql\\bin\\pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
-                )
+                # Start the database if not already started
+                res = os.system(f"{base_pgsql}pg_ctl status -D postgres_data")
+                if res != 0:
+                    os.system(
+                        f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
+                    )
                 # Create a new database
                 os.system(
-                    ".\\pgsql\\bin\\pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
+                    f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
                 )
 
             init_postgres("autogpt_server_password")
@@ -83,7 +92,7 @@ async def main():
                 os.environ["DATABASE_URL"] = (
                     "postgresql://autogpt_server:autogpt_server_password@localhost:5432/autogpt_server"
                 )
-            cli.run(["migrate", "deploy"])
+            cli.run(["migrate", "deploy", "--schema=./postgres.schema.prisma"])
 
         install_runtime()
     prisma = Prisma(
