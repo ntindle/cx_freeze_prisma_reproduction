@@ -1,8 +1,10 @@
 import glob
 from pkgutil import iter_modules
+import urllib
 
 import os
 import sys
+import zipfile
 
 from cx_Freeze import Executable, setup  # type: ignore
 
@@ -25,32 +27,34 @@ include_files = [
 ]
 
 
-def find_latest_node_folder(base_path):
-    pattern = os.path.join(base_path, "node-v*")
-    matching_folders = glob.glob(pattern)
-    if matching_folders:
-        return max(matching_folders, key=os.path.getctime)
-    return None
+# Add postgres binary
+# windows: https://sbp.enterprisedb.com/getfile.jsp?fileid=1259104
+# mac: https://sbp.enterprisedb.com/getfile.jsp?fileid=1259020
 
 
-# Determine the base path
-if sys.platform.startswith("win"):
-    base_path = os.path.expanduser("~\\.cache\\prisma-python\\nodeenv\\src")
-else:
-    # For non-Windows platforms, adjust the path accordingly
-    base_path = os.path.expanduser("~/.cache/prisma-python/nodeenv/src")
+# Download and extract PostgreSQL binary
+def download_and_extract_postgres(url, filename="pgsql.zip"):
+    print(f"Downloading PostgreSQL from {url}")
+    with urllib.request.urlopen(url) as response, open(filename, "wb") as out_file:
+        out_file.write(response.read())
 
-# Find the latest node folder
-node_folder = find_latest_node_folder(base_path)
+    print("Extracting PostgreSQL")
+    with zipfile.ZipFile(filename, "r") as zip_ref:
+        zip_ref.extractall("pgsql")
 
-if node_folder and os.path.exists(node_folder):
-    include_files.append((node_folder, "prisma-nodeenv"))
-else:
-    # print the directoryof base_path
-    print(os.listdir(base_path))
-    raise Exception(
-        f"Node folder not found. Base Path: {base_path} Node Folder: {node_folder} files: {os.listdir(base_path)}"
-    )
+    os.remove(filename)
+    print("PostgreSQL extraction complete")
+
+
+
+if sys.platform == "win32":
+    postgres_url = "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259104"
+    download_and_extract_postgres(postgres_url)
+    include_files.append(("pgsql", "pgsql"))
+elif sys.platform == "darwin":
+    postgres_url = "https://sbp.enterprisedb.com/getfile.jsp?fileid=1259020"
+    download_and_extract_postgres(postgres_url)
+    include_files.append(("pgsql", "pgsql"))
 
 
 # add the prisma directory if it exists
