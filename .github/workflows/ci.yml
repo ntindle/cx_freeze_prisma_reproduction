@@ -24,6 +24,7 @@ jobs:
       matrix:
         python-version: ["3.10"]
         platform-os: [windows]
+        prisma-schema: [schema.prisma, postgres.schema.prisma]
     runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
 
     steps:
@@ -33,7 +34,6 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -43,6 +43,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Setup PostgreSQL
+        uses: ikalnytskyi/action-setup-postgres@v6
+        id: postgres
 
       - id: get_date
         name: Get date
@@ -67,27 +71,34 @@ jobs:
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Generate Prisma Client
-        run: poetry run prisma generate
+        run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Run Database Migrations
-        run: poetry run prisma migrate dev --name updates
+        run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
         env:
           PRISMA_BINARY_CACHE_DIR: "./prisma"
           PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Build distribution
         run: |
           poetry run poe dist_msi
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
         with:
-          name: prisma_reproduction-msi-${{ matrix.platform-os }}
+          name: prisma_reproduction-msi-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}
           path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\dist\*.msi
 
   build_with_no_env:
@@ -99,6 +110,7 @@ jobs:
       matrix:
         python-version: ["3.10"]
         platform-os: [windows]
+        prisma-schema: [schema.prisma, postgres.schema.prisma]
     runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
 
     steps:
@@ -108,7 +120,6 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -118,6 +129,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Setup PostgreSQL
+        uses: ikalnytskyi/action-setup-postgres@v6
+        id: postgres
 
       - id: get_date
         name: Get date
@@ -136,17 +151,190 @@ jobs:
         run: poetry install
 
       - name: Generate Prisma Client
-        run: poetry run prisma generate
+        run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Run Database Migrations
-        run: poetry run prisma migrate dev --name updates
+        run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Build distribution
         run: |
           poetry run poe dist_msi
+        env:
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
 
       - name: Upload msi artifact
         uses: actions/upload-artifact@v4
         with:
-          name: prisma_reproduction-no-env-set-msi-${{ matrix.platform-os }}
+          name: prisma_reproduction-no-env-set-msi-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}
           path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\dist\*.msi
+
+  build_exe_with_env:
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+        platform-os: [windows]
+        prisma-schema: [schema.prisma, postgres.schema.prisma]
+    runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup PostgreSQL
+        uses: ikalnytskyi/action-setup-postgres@v6
+        id: postgres
+        
+      - id: get_date
+        name: Get date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Install Poetry (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+          $env:PATH += ";$env:APPDATA\Python\Scripts"
+          echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: poetry install
+
+      - name: Install Prisma Dependencies
+        run: |
+          mkdir prisma
+          poetry run prisma py fetch --force
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Generate Prisma Client
+        run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Run Database Migrations
+        run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Build distribution
+        run: |
+          poetry run poe build_exe
+        env:
+          PRISMA_BINARY_CACHE_DIR: "./prisma"
+          PRISMA_HOME_DIR: "./prisma"
+          DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Zip the exe folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip"
+
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma_reproduction-exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip
+
+  build_exe_with_no_env:
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+        platform-os: [windows]
+        prisma-schema: [schema.prisma, postgres.schema.prisma]
+    runs-on: ${{ matrix.platform-os != 'macos-arm64' && format('{0}-latest', matrix.platform-os) || 'macos-14' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup PostgreSQL
+        uses: ikalnytskyi/action-setup-postgres@v6
+        id: postgres
+
+      - id: get_date
+        name: Get date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Install Poetry (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+          $env:PATH += ";$env:APPDATA\Python\Scripts"
+          echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: poetry install
+
+      - name: Generate Prisma Client
+        run: poetry run prisma generate --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Run Database Migrations
+        run: poetry run prisma migrate dev --name updates --schema=./${{ matrix.prisma-schema }}
+        env:
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Build distribution
+        run: |
+          poetry run poe build_exe
+        env:
+          DATABASE_URL:  ${{ steps.postgres.outputs.connection-uri }}
+
+      - name: Zip the exe folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe*" -DestinationPath "D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip"
+
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma_reproduction-no-env-set-exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}
+          path: D:\a\cx_freeze_prisma_reproduction\cx_freeze_prisma_reproduction\build\exe-${{ matrix.platform-os }}-${{ matrix.prisma-schema }}.zip

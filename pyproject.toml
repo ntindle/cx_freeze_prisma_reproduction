@@ -11,8 +11,15 @@ prisma = "^0.13.1"
 cx-Freeze = "^7.2.0"
 poethepoet = "^0.27.0"
 
+# [tool.prisma]
+# # cache engine binaries in a directory relative to your project
+# binary_cache_dir = '.binaries'
+
 [tool.poe.tasks.dist_msi]
 cmd = "python setup.py bdist_msi"
+
+[tool.poe.tasks.build_exe]
+cmd = "python setup.py build_exe"
 
 [build-system]
 requires = ["poetry-core"]
