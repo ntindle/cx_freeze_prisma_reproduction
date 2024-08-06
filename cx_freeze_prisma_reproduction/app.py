@@ -44,7 +44,8 @@ async def main():
                     # cehck if .\\pgsql\\pgsql\\bin\\ exists\
                     if os.path.exists(".\\pgsql\\pgsql\\bin\\"):
                         base_pgsql = ".\\pgsql\\pgsql\\bin\\"
-                    raise FileNotFoundError("PostgreSQL directory not found")
+                    else:
+                        raise FileNotFoundError("PostgreSQL directory not found")
 
                 os.system(
                     f"{base_pgsql}initdb.exe --pgdata=postgres_data --username=autogpt_server --pwfile=pg_pass.txt --no-instructions"
@@ -60,10 +61,11 @@ async def main():
                     os.system(
                         f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
                     )
-                # Create a new database
                 os.system(
-                    f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
-                )
+                # Create a new database -> should be handled by prisma
+                # os.system(
+                #     f"{base_pgsql}pg_ctl.exe start -D postgres_data -l postgres_data\\logfile.txt"
+                # )
 
             init_postgres("autogpt_server_password")
 
@@ -86,13 +88,13 @@ async def main():
             binary_dir = cli.config.binary_cache_dir.absolute()
             if not binary_dir.exists():
                 print(f"Installing prisma to {cache_dir}")
-                cli.run(["generate", "--schema=./postgres.schema.prisma"])
+                cli.run(["generate", "--schema=./prisma/postgres.schema.prisma"])
             if not os.getenv("DATABASE_URL"):
                 print("No DATABASE_URL found, setting to default")
                 os.environ["DATABASE_URL"] = (
                     "postgresql://autogpt_server:autogpt_server_password@localhost:5432/autogpt_server"
                 )
-            cli.run(["migrate", "deploy", "--schema=./postgres.schema.prisma"])
+            cli.run(["migrate", "deploy", "--schema=./prisma/postgres.schema.prisma"])
 
         install_runtime()
     prisma = Prisma(
